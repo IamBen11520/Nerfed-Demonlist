@@ -1,0 +1,496 @@
+table {
+  width: 90%;
+  margin: 0 5%;
+}
+
+th {
+  height: 3em;
+  padding: 6px;
+
+  color: #fff;
+}
+
+td {
+  line-height: 2em;
+  text-indent: 5px;
+}
+
+tr {
+  background: #fefeff;
+}
+
+tr:nth-child(even) {
+  background: #e6eeff;
+}
+
+#history-table {
+  font-weight: bold;
+}
+
+#history-table tr {
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+}
+
+/* same colors as info boxes! */
+#history-table tr.moved-up {
+  background: var(--color-ok-bg);
+  color: var(--color-ok-text);
+}
+
+#history-table tr.moved-down {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+
+#editors li {
+  display: inline-block;
+  margin: 2px;
+  overflow: hidden;
+}
+
+#editors ul {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-content: center;
+
+  margin: 0% 5%;
+
+  font-variant: small-caps;
+}
+
+.right p,
+.right span,
+#rules span {
+  font-size: 0.8em;
+  font-weight: normal;
+}
+
+@media (max-width: 1071px) {
+  #rules,
+  #discord {
+    order: -1;
+  }
+
+  #discord {
+    width: 100%;
+  }
+
+  #editors,
+  #submit,
+  #stats {
+    min-width: 200px;
+    width: 30%;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 768px) {
+  #editors,
+  #submit,
+  #stats {
+    width: 100%;
+  }
+
+  .video-link {
+    display: none;
+  }
+}
+
+.dropdown {
+  background: var(--color-bg);
+  text-align: center;
+}
+
+.dropdown li {
+  padding: 10px calc(10px + 0.52434444444444%);
+  min-width: 200px;
+  width: 200px;
+  flex-grow: 1;
+}
+
+.dropdown i {
+  font-variant: small-caps;
+  font-size: 0.8em;
+}
+
+#lists .button {
+  font-weight: 600;
+}
+
+#level-info span {
+  margin: 5px 10px;
+}
+
+/* Stats viewer styles */
+
+#stats-viewer-pagination li i {
+  padding-left: 5px;
+
+  color: #444;
+
+  font-size: 70%;
+  font-variant: small-caps;
+}
+
+/* Submission form styles */
+
+#submission-form h3 {
+  margin: 20px 0px 10px 0px;
+}
+
+#submission-form > p {
+  margin: 5px 0;
+
+  font-size: 90%;
+  text-align: center;
+}
+
+.thumb {
+  background: black;
+  background-size: cover;
+}
+
+.completed {
+  background: var(--color-ok-bg);
+}
+
+@media (max-width: 767px) {
+  .thumb {
+    width: 100%;
+    box-shadow: 1px -53px 26px -20px var(--color-bg) inset;
+  }
+
+  .completed .thumb {
+    box-shadow: 1px -53px 26px -20px var(--color-ok-bg) inset;
+  }
+
+  .demon-byline {
+    font-size: 80%;
+  }
+
+  .demon-info {
+      margin-top: -10px;
+  }
+}
+
+@media (min-width: 768px) {
+  .thumb {
+    max-width: 30%;
+    min-width: 30%;
+  }
+
+  .demon-byline {
+    padding-left: 15px;
+  }
+}
+
+.ct-series-a .ct-line,
+.ct-series-a .ct-point {
+  stroke: #0881c6;
+}
+
+
+/* ========================================
+   MODERN DEMONLIST REDESIGN
+   ======================================== */
+
+/* Overall page */
+body {
+  background: #0b0d14;
+  color: #e8eaf2;
+}
+
+.container.flex.m-center {
+  gap: 24px;
+  padding-top: 24px;
+  padding-bottom: 40px;
+  align-items: flex-start;
+}
+
+/* Demon entries */
+main.left > section.panel {
+  background: linear-gradient(145deg, #191d2b, #121622);
+  border: 1px solid #292f43;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.22);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+main.left > section.panel:hover {
+  transform: translateY(-2px);
+  border-color: #7546a8;
+}
+
+.demon-info {
+  padding: 16px;
+  gap: 12px;
+}
+
+.demon-byline h2 {
+  font-size: 1.25em;
+  font-weight: 750;
+  letter-spacing: 0.2px;
+}
+
+.demon-byline h2 a {
+  color: #f2f0ff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.demon-byline h2 a:hover {
+  color: #bd8cff;
+}
+
+.demon-byline h3 {
+  color: #a7abc0;
+  margin-top: 5px;
+}
+
+/* Demon thumbnails */
+.thumb {
+  background-color: #090b11;
+  background-position: center;
+  background-size: cover;
+  transition: filter 0.2s ease;
+}
+
+.thumb:hover {
+  filter: brightness(1.15);
+}
+
+/* Completed demons */
+main.left > section.panel.completed {
+  background: linear-gradient(145deg, #14251f, #111b1a);
+  border-color: #285a48;
+}
+
+.completed .demon-byline h2 a:hover {
+  color: #75e0ae;
+}
+
+/* Sidebar panels */
+aside.right > section,
+aside.right > div,
+aside.right .panel {
+  background: #151927;
+  border: 1px solid #292f43;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* Dropdown navigation */
+.dropdown {
+  background: #111522;
+  border-top: 1px solid #292f43;
+  border-bottom: 1px solid #292f43;
+}
+
+.dropdown li {
+  transition: background 0.2s ease;
+}
+
+.dropdown li:hover {
+  background: #20263a;
+}
+
+#lists .button {
+  border-radius: 8px;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+th {
+  background: #252b40;
+}
+
+tr,
+tr:nth-child(even) {
+  background: #171c2b;
+}
+
+td {
+  border-bottom: 1px solid #292f43;
+  color: #e1e4ef;
+}
+
+/* History table keeps its status colours */
+#history-table tr {
+  background: var(--color-warn-bg);
+  color: var(--color-warn-text);
+}
+
+#history-table tr.moved-up {
+  background: var(--color-ok-bg);
+  color: var(--color-ok-text);
+}
+
+#history-table tr.moved-down {
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+}
+
+/* Editors */
+#editors ul {
+  gap: 8px;
+}
+
+/* Mobile layout */
+@media (max-width: 768px) {
+  .container.flex.m-center {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  main.left > section.panel {
+    border-radius: 10px;
+  }
+
+  .demon-info {
+    padding: 12px;
+  }
+}
+
+/* Dark list navigation buttons */
+div.button.white.js-toggle {
+  background: #1c2132 !important;
+  color: #eee9ff !important;
+  border: 1px solid #393653;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+div.button.white.js-toggle:hover {
+  background: #302344 !important;
+  color: #d5b5ff !important;
+  border-color: #9662d2;
+}
+
+/* Dropdown contents */
+.dropdown {
+  background: #111522;
+  border-color: #292f43;
+}
+
+.dropdown a {
+  color: #e8eaf2;
+  text-decoration: none;
+}
+
+.dropdown a:hover {
+  color: #c99aff;
+}
+
+.dropdown li:hover {
+  background: #252039;
+}
+
+/* Modern dark top navigation */
+header nav {
+  background: #111522 !important;
+  color: #eee9ff;
+  border-bottom: 1px solid #292f43;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+header nav a {
+  color: #eee9ff;
+  text-decoration: none;
+}
+
+header nav .nav-item:hover {
+  background: #252039;
+  color: #c99aff;
+}
+
+header nav .nav-drop-down,
+header nav .nav-hover-dropdown {
+  background: #151927;
+  border-color: #393653;
+}
+
+header nav .nav-hover-dropdown a:hover {
+  background: #252039;
+  color: #c99aff;
+}
+
+/* Remove white backgrounds from navigation items */
+header nav .nav-item.white,
+header nav .nav-group.white {
+  background: transparent !important;
+  color: #eee9ff !important;
+}
+
+/* Navigation hover effect */
+header nav .nav-item.white:hover,
+header nav .nav-group.white:hover {
+  background: #252039 !important;
+  color: #c99aff !important;
+}
+
+/* Keep dropdowns dark */
+header nav .nav-group .nav-hover-dropdown {
+  background: #151927 !important;
+  border-color: #393653 !important;
+}
+
+/* Clean up navigation separators */
+header nav,
+header nav * {
+  outline: none;
+}
+
+header nav {
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+header nav .nav-item,
+header nav .nav-group {
+  border: none !important;
+  outline: none !important;
+}
+
+/* Clean list navigation */
+.dropdown {
+  border: none !important;
+  box-shadow: none;
+}
+
+.dropdown li {
+  border: none !important;
+}
+
+div.button.white.js-toggle {
+  border: 1px solid #393653 !important;
+  border-radius: 10px;
+}
+
+/* Remove dotted outlines from links */
+header nav a,
+.dropdown a {
+  outline: none;
+  text-decoration: none;
+}
+div.button.white.js-toggle {
+  outline: none !important;
+}
+
+div.button.white.js-toggle:focus-visible {
+  outline: 2px solid #9662d2 !important;
+  outline-offset: 2px;
+}#lists,
+#lists > div {
+  outline: none !important;
+  border: none !important;
+}
