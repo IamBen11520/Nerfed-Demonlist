@@ -91,7 +91,7 @@ impl GeolocationProvider for IpWhoIsGeolocationProvider {
 #[rocket::launch]
 async fn rocket() -> _ {
     // Load the configuration from your .env file
-    dotenv::dotenv().unwrap();
+    let _ = dotenv::dotenv();
 
     // Load the translation files
     LocalesLoader::load(&[
@@ -108,7 +108,16 @@ async fn rocket() -> _ {
     let pool = PointercratePool::init().await;
 
     // Set up the HTTP server
-    let rocket = rocket::build()
+    let port = std::env::var("PORT")
+    .ok()
+    .and_then(|value| value.parse::<u16>().ok())
+    .unwrap_or(1971);
+
+let figment = rocket::Config::figment()
+    .merge(("address", "0.0.0.0"))
+    .merge(("port", port));
+
+let rocket = rocket::custom(figment)
         // Tell it about the connection pool to use (individual handlers can get hold of this pool by declaring an argument of type `&State<PointercratePool>`)
         .manage(pool)
         // Tell pointercrate's core components about navigation bar and footers, so that it knows how to render the website
