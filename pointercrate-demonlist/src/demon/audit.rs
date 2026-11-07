@@ -40,6 +40,7 @@ pub async fn movement_log_for_demon(demon_id: i32, connection: &mut PgConnection
     let audit_log = audit_log_for_demon(demon_id, connection).await?;
 
     let mut movement_log = Vec::new();
+    let mut deleted = false;
     // map time -> NamedId keeping track of all additions
     let mut additions = HashMap::new();
     // map time -> NamedId keeping track when movements to -1 happened
@@ -165,16 +166,35 @@ pub async fn movement_log_for_demon(demon_id: i32, connection: &mut PgConnection
                     // audit logs accurately) :(
                 }
             },
-            AuditLogEntryType::Deletion => unreachable!(),
+            AuditLogEntryType::Deletion => {
+    // Preserve the demon's final position in its movement history.
+    if let Some(row) = sqlx::query!(
+        "SELECT position FROM demon_deletions WHERE id = $1 ORDER BY time DESC LIMIT 1",
+        demon_id
+    )
+    .fetch_optional(&mut *connection)
+    .await?
+    {
+        if let Some(entry) = movement_log.last_mut() {
+            entry.new_position = Some(row.position);
         }
     }
 
-    // update the last entry with the current position
-    MinimalDemon::by_id(demon_id, &mut *connection).await.map(|minimal_demon| {
-        if let Some(entry) = movement_log.last_mut() {
-            entry.new_position = Some(minimal_demon.position)
+    deleted = true;
+},
         }
-    })?;
+    }
+
+    // Update the last entry with the current position, unless the demon was deleted.
+    if !deleted {
+        MinimalDemon::by_id(demon_id, &mut *connection)
+            .await
+            .map(|minimal_demon| {
+                if let Some(entry) = movement_log.last_mut() {
+                    entry.new_position = Some(minimal_demon.position);
+                }
+            })?;
+    }
 
     Ok(movement_log)
 }
@@ -204,7 +224,28 @@ pub async fn audit_log_for_demon(demon_id: i32, connection: &mut PgConnection) -
             r#type: AuditLogEntryType::Addition,
         });
     }
+let deletion_row = sqlx::query!(
+    r#"SELECT time, audit_id, userid, members.name AS "name?"
+       FROM demon_deletions
+       LEFT OUTER JOIN members ON members.member_id = userid
+       WHERE id = $1"#,
+    demon_id
+)
+.fetch_optional(&mut *connection)
+.await?;
 
+if let Some(deletion) = deletion_row {
+    entries.push(AuditLogEntry {
+        time: deletion.time,
+        entry_id: deletion.audit_id,
+        id: demon_id,
+        user: NamedId {
+            name: deletion.name,
+            id: deletion.userid,
+        },
+        r#type: AuditLogEntryType::Deletion,
+    });
+}
     let mut modification_stream = sqlx::query!(
         r#"SELECT time,
                 audit_id,
@@ -262,6 +303,6 @@ pub async fn audit_log_for_demon(demon_id: i32, connection: &mut PgConnection) -
             },
         })
     }
-
+entries.sort_by_key(|entry| (entry.time, entry.entry_id));
     Ok(entries)
 }

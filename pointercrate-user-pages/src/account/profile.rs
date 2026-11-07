@@ -128,7 +128,7 @@ impl AccountPageTab for ProfileTab {
                     p {
                         (tr("profile-logout.info"))
                     }
-                    a.red.hover.button href = "/logout" style = "margin: 15px auto 0px; display: inline-block" {
+                    a.red.hover.button href = "/logout/" style = "margin: 15px auto 0px; display: inline-block" {
                         (tr("profile-logout.button"))
                     }
                 }

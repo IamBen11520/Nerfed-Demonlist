@@ -25,6 +25,7 @@ pub mod audit;
 mod paginate;
 mod patch;
 mod post;
+mod delete;
 
 pub struct TimeShiftedDemon {
     pub current_demon: Demon,

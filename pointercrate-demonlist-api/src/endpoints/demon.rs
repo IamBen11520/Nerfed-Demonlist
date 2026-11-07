@@ -141,3 +141,16 @@ pub async fn delete_creator(demon_id: i32, player_id: i32, mut auth: Auth<ApiTok
 
     Ok(Status::NoContent)
 }
+#[localized]
+#[rocket::delete("/<demon_id>/")]
+pub async fn delete(demon_id: i32, mut auth: Auth<ApiToken>) -> Result<Status> {
+    auth.require_permission(LIST_MODERATOR)?;
+
+    let demon = Demon::by_id(demon_id, &mut auth.connection).await?;
+
+    demon.delete(&mut auth.connection).await?;
+
+    auth.commit().await?;
+
+    Ok(Status::NoContent)
+}
