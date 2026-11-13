@@ -219,10 +219,11 @@ a {
   margin: 30px 10px;
 
   text-align: center;
-
   position: relative;
 
-  background: var(--color-bg);
+  background: #151927;
+  border: 1px solid #292f43;
+  border-radius: 14px;
 
   flex-grow: 1;
   overflow: hidden;
@@ -354,7 +355,7 @@ p.error {
   left: 0;
   height: 1em;
   width: 1em;
-  background-color: #eee;
+  background-color: #252b40;
   margin-top: 2px;
 }
 .stats-container .checkmark {
@@ -363,7 +364,7 @@ p.error {
 
 /* On mouse-over, add a grey background color */
 .cb-container:hover input ~ .checkmark {
-  background-color: #ccc;
+  background-color: #343b55;
 }
 
 /* When the checkbox is checked, add a blue background */

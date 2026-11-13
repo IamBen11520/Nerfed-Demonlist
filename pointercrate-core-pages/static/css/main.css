@@ -19,16 +19,16 @@
   --color-consider-text: #326067;
   /* --color-consider-accent */
 
-  --color-text: #444446;
-  --color-text-accent: #222;
+  --color-text: #e8eaf2;
+  --color-text-accent: #f2f0ff;
 
-  --color-border: lightgray;
-  --color-border-broken: #555;
+  --color-border: #292f43;
+  --color-border-broken: #7546a8;
 
-  --color-bg: white;
+  --color-bg: #0b0d14;
 
-  --color-link: blue;
-  --color-link-dark: #f77e39;
+  --color-link: #bd8cff;
+  --color-link-dark: #bd8cff;
 
   --color-pc-button-bg: #0881c6;
   --color-pc-button-bg-hover: #076696;
@@ -49,6 +49,7 @@
 
 body {
   color: var(--color-text);
+  background-color: var(--color-bg);
 
   position: relative;
 
