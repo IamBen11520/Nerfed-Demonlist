@@ -119,6 +119,11 @@ impl AccountPageTab for DemonsTab {
                                         }
                                         br;
                                         span #demon-creators {}
+                                        div style = "text-align: center; margin-top: 20px;" {
+                                           button.button.red.hover #demon-delete type = "button" {
+                                               "Remove Demon"
+                                           }
+                                        }
 
                                     }
                                 }

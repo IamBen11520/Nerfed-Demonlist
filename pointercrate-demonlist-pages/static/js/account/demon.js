@@ -51,6 +51,36 @@ export class DemonManager extends FilteredPaginator {
     this._publisher = document.getElementById("demon-publisher");
 
     this._creators = document.getElementById("demon-creators");
+    this._deleteButton = document.getElementById("demon-delete");
+
+this._deleteButton.addEventListener("click", async () => {
+  const demon = this.currentObject;
+
+  if (!demon) {
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Are you sure you want to permanently remove "${demon.name}" from the Demonlist? This cannot be undone.`
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  this._deleteButton.disabled = true;
+
+  try {
+    await del("/api/v2/demons/" + demon.id + "/");
+
+    window.alert(`"${demon.name}" was successfully removed.`);
+    window.location.reload();
+  } catch (error) {
+    console.error("Failed to remove demon:", error);
+    this.output.setError("Failed to remove demon. Check your permissions or try again.");
+    this._deleteButton.disabled = false;
+  }
+});
 
     let videoForm = setupFormDialogEditor(
       new PaginatorEditorBackend(this, false),
