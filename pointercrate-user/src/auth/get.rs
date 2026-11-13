@@ -10,7 +10,7 @@ use super::NoAuth;
 impl AuthenticatedUser<NoAuth> {
     pub async fn by_id(id: i32, connection: &mut PgConnection) -> Result<Self> {
         let row = sqlx::query!(
-            r#"SELECT member_id, members.name, permissions::integer, display_name, youtube_channel::text, password_hash, generation, google_account_id FROM members WHERE member_id = $1"#,
+            r#"SELECT member_id, members.name, permissions::integer, display_name, youtube_channel::text, password_hash, generation, google_account_id, password_reset_required FROM members WHERE member_id = $1"#,
             id
         )
         .fetch_one(connection)
@@ -32,17 +32,18 @@ impl AuthenticatedUser<NoAuth> {
                 };
 
                 Ok(AuthenticatedUser {
-                    gen: row.generation,
-                    auth_type,
-                    auth_artifact: NoAuth,
-                })
+    gen: row.generation,
+    password_reset_required: row.password_reset_required,
+    auth_type,
+    auth_artifact: NoAuth,
+})
             },
         }
     }
 
     pub async fn by_name(name: &str, connection: &mut PgConnection) -> Result<Self> {
         let row = sqlx::query!(
-            r#"SELECT member_id, members.name, permissions::integer, display_name, youtube_channel::text, password_hash, generation, google_account_id FROM members WHERE members.name = $1"#,
+            r#"SELECT member_id, members.name, permissions::integer, display_name, youtube_channel::text, password_hash, generation, google_account_id, password_reset_required FROM members WHERE members.name = $1"#,
             name.to_string()
         )
         .fetch_one(connection)
@@ -64,11 +65,41 @@ impl AuthenticatedUser<NoAuth> {
                 };
 
                 Ok(AuthenticatedUser {
-                    gen: row.generation,
-                    auth_type,
-                    auth_artifact: NoAuth,
-                })
+    gen: row.generation,
+    password_reset_required: row.password_reset_required,
+    auth_type,
+    auth_artifact: NoAuth,
+})
             },
         }
+    }
+}
+impl AuthenticatedUser<NoAuth> {
+    pub async fn admin_reset_password(
+        self,
+        password: String,
+        connection: &mut PgConnection,
+    ) -> Result<()> {
+        let user_id = self.user().id;
+
+        if !self.is_legacy() {
+            return Err(CoreError::Forbidden);
+        }
+
+        super::legacy::LegacyAuthenticatedUser::validate_password(&password)
+            .map_err(|err| CoreError::internal_server_error(err.to_string()))?;
+
+        let password_hash = bcrypt::hash(&password, bcrypt::DEFAULT_COST)
+            .map_err(|_| CoreError::internal_server_error("Password hashing failed"))?;
+
+        sqlx::query!(
+            "UPDATE members SET password_hash = $1, generation = generation + 1, password_reset_required = TRUE WHERE member_id = $2",
+            password_hash,
+            user_id
+        )
+        .execute(connection)
+        .await?;
+
+        Ok(())
     }
 }

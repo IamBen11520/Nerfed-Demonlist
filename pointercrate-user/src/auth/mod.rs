@@ -74,6 +74,7 @@ impl PasswordOrBrowser {
 /// See also [`NoAuth`], [`ApiToken`], [`NonMutating`] and [`PasswordOrBrowser`]
 pub struct AuthenticatedUser<Auth> {
     gen: i64,
+    password_reset_required: bool,
     auth_type: AuthenticationType,
     auth_artifact: Auth,
 }
@@ -146,6 +147,9 @@ impl<Auth> AuthenticatedUser<Auth> {
     pub fn is_legacy(&self) -> bool {
         matches!(self.auth_type, AuthenticationType::Legacy(_))
     }
+pub fn password_reset_required(&self) -> bool {
+    self.password_reset_required
+}
 
     pub fn into_user(self) -> User {
         match self.auth_type {
@@ -179,10 +183,11 @@ impl AuthenticatedUser<NoAuth> {
             Err(CoreError::Unauthorized)
         } else {
             Ok(AuthenticatedUser {
-                gen: self.gen,
-                auth_type: self.auth_type,
-                auth_artifact: ApiToken,
-            })
+    gen: self.gen,
+    password_reset_required: self.password_reset_required,
+    auth_type: self.auth_type,
+    auth_artifact: ApiToken,
+})
         }
     }
 
@@ -191,10 +196,11 @@ impl AuthenticatedUser<NoAuth> {
             Err(CoreError::Unauthorized)
         } else {
             Ok(AuthenticatedUser {
-                gen: self.gen,
-                auth_type: self.auth_type,
-                auth_artifact: NonMutating(claims),
-            })
+    gen: self.gen,
+    password_reset_required: self.password_reset_required,
+    auth_type: self.auth_type,
+    auth_artifact: NonMutating(claims),
+})
         }
     }
 
@@ -205,10 +211,11 @@ impl AuthenticatedUser<NoAuth> {
         }
 
         Ok(AuthenticatedUser {
-            auth_type: self.auth_type,
-            gen: self.gen,
-            auth_artifact: PasswordOrBrowser(true),
-        })
+    auth_type: self.auth_type,
+    gen: self.gen,
+    password_reset_required: self.password_reset_required,
+    auth_artifact: PasswordOrBrowser(true),
+})
     }
 }
 
@@ -218,10 +225,11 @@ impl AuthenticatedUser<NonMutating> {
 
         match self.auth_artifact.0.session_uuid {
             Some(session_uuid) if csrf_claims.session == session_uuid => Ok(AuthenticatedUser {
-                gen: self.gen,
-                auth_type: self.auth_type,
-                auth_artifact: PasswordOrBrowser(false),
-            }),
+    gen: self.gen,
+    password_reset_required: self.password_reset_required,
+    auth_type: self.auth_type,
+    auth_artifact: PasswordOrBrowser(false),
+}),
             _ => Err(CoreError::Unauthorized),
         }
     }
@@ -270,10 +278,11 @@ impl AuthenticatedUser<PasswordOrBrowser> {
             Err(CoreError::Unauthorized)
         } else {
             Ok(AuthenticatedUser {
-                gen: self.gen,
-                auth_type: self.auth_type,
-                auth_artifact: ApiToken,
-            })
+    gen: self.gen,
+    password_reset_required: self.password_reset_required,
+    auth_type: self.auth_type,
+    auth_artifact: ApiToken,
+})
         }
     }
 }
@@ -297,6 +306,7 @@ mod tests {
                 bcrypt::hash("bad password", bcrypt::DEFAULT_COST).unwrap(),
             ),
             gen: 0,
+            password_reset_required: false,
             auth_artifact: NoAuth,
         }
     }
@@ -314,6 +324,7 @@ mod tests {
                 bcrypt::hash("bad password", bcrypt::DEFAULT_COST).unwrap(),
             ),
             gen: 0,
+            password_reset_required: false,
             auth_artifact: NoAuth,
         }
     }

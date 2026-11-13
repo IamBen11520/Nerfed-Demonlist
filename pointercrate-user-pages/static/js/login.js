@@ -36,9 +36,9 @@ function initializeLoginForm() {
       Authorization:
         "Basic " + btoa(loginUsername.value + ":" + loginPassword.value),
     })
-      .then((response) => {
-        window.location = "/account/";
-      })
+     .then((response) => {
+  window.location = response.data.redirect;
+})
       .catch((response) => {
         console.log(response);
         if (response.status === 401) {

@@ -112,9 +112,10 @@ impl AccountPageTab for UsersTab {
                                 }
                                 div.flex.no-stretch {
                                     @if user.user().has_permission(ADMINISTRATOR) {
-                                        input.button.red.hover #delete-user type = "button" style = "margin: 15px auto 0px;" value=(tr("user-viewer.delete-user"));
-                                    }
-                                    input.button.blue.hover type = "submit" style = "margin: 15px auto 0px;" value=(tr("user-viewer.edit-user"));
+    input.button.red.hover #delete-user type = "button" style = "margin: 15px auto 0px;" value=(tr("user-viewer.delete-user"));
+
+    input.button.blue.hover #reset-user-password type = "button" style = "margin: 15px auto 0px;" value = "Reset Password";
+}
                                 }
                             }
                         }

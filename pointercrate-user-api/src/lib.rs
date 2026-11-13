@@ -23,6 +23,7 @@ pub fn setup(mut rocket: Rocket<Build>) -> Rocket<Build> {
     let mut page_routes = rocket::routes![
         pages::login_page,
         pages::account_page,
+        pages::reset_password_page,
         pages::login,
         pages::logout,
         pages::register_page
@@ -45,10 +46,11 @@ pub fn setup(mut rocket: Rocket<Build>) -> Rocket<Build> {
         .mount(
             "/api/v1/users/",
             rocket::routes![
-                endpoints::user::paginate,
-                endpoints::user::get_user,
-                endpoints::user::patch_user,
-                endpoints::user::delete_user
+    endpoints::user::paginate,
+    endpoints::user::get_user,
+    endpoints::user::patch_user,
+    endpoints::user::delete_user,
+    endpoints::user::reset_password
             ],
         )
         .mount("/", page_routes)

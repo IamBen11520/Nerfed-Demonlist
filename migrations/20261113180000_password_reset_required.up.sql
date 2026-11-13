@@ -1,0 +1,2 @@
+ALTER TABLE members
+ADD COLUMN password_reset_required BOOLEAN NOT NULL DEFAULT FALSE;

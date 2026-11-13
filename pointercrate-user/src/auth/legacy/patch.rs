@@ -19,7 +19,7 @@ impl LegacyAuthenticatedUser {
             bcrypt::hash(&password, bcrypt::DEFAULT_COST).map_err(|_| CoreError::internal_server_error("bcrypt library bug"))?;
 
         sqlx::query!(
-            "UPDATE members SET password_hash = $1 WHERE member_id = $2",
+            "UPDATE members SET password_hash = $1, password_reset_required = FALSE WHERE member_id = $2",
             self.password_hash,
             self.user.id
         )

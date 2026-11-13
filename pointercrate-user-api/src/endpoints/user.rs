@@ -130,3 +130,42 @@ pub async fn delete_user(mut auth: Auth<ApiToken>, precondition: Precondition, u
 
     Ok(Status::NoContent)
 }
+#[localized]
+#[rocket::post("/<user_id>/reset-password")]
+pub async fn reset_password(
+    mut auth: Auth<ApiToken>,
+    user_id: i32,
+) -> Result<Json<String>> {
+    use pointercrate_core::util::csprng_u64;
+    use pointercrate_user::auth::AuthenticatedUser;
+
+    auth.require_permission(ADMINISTRATOR)?;
+
+    if user_id == auth.user.user().id {
+        return Err(CoreError::Forbidden.into());
+    }
+
+    let user = AuthenticatedUser::by_id(user_id, &mut auth.connection).await?;
+
+    if !user.is_legacy() {
+        return Err(CoreError::Forbidden.into());
+    }
+
+    let temporary_password = format!(
+        "{:016x}{:016x}{:016x}{:016x}",
+        csprng_u64()?,
+        csprng_u64()?,
+        csprng_u64()?,
+        csprng_u64()?
+    );
+
+    user.admin_reset_password(
+        temporary_password.clone(),
+        &mut auth.connection,
+    )
+    .await?;
+
+    auth.commit().await?;
+
+    Ok(Json(temporary_password))
+}

@@ -91,6 +91,9 @@ impl<'r> FromRequest<'r> for Auth<ApiToken> {
                 let access_claims = tryo_result!(AccessClaims::decode(token));
                 let user = tryo_result!(AuthenticatedUser::by_id(tryo_result!(access_claims.id()), &mut connection).await);
                 let authenticated_user = tryo_result!(user.validate_api_access(access_claims));
+                if authenticated_user.password_reset_required() {
+    return CoreError::Forbidden.into_outcome();
+}
 
                 tryo_result!(audit_connection(&mut connection, authenticated_user.user().id).await);
 
@@ -107,6 +110,14 @@ impl<'r> FromRequest<'r> for Auth<ApiToken> {
             let access_claims = tryo_result!(AccessClaims::decode(access_token.value()));
             let user = tryo_result!(AuthenticatedUser::by_id(tryo_result!(access_claims.id()), &mut connection).await);
             let authenticated_for_get = tryo_result!(user.validate_cookie_claims(access_claims));
+            if authenticated_for_get.password_reset_required()
+    && request.uri().path().as_str() != "/reset-password/"
+{
+    return Outcome::Forward(Status::Unauthorized);
+}
+            if authenticated_for_get.password_reset_required() {
+    return CoreError::Forbidden.into_outcome();
+}
             let authenticated = tryo_result!(authenticated_for_get.validate_csrf_token(csrf_token));
 
             tryo_result!(audit_connection(&mut connection, authenticated.user().id).await);
@@ -156,6 +167,17 @@ impl<'r> FromRequest<'r> for Auth<PasswordOrBrowser> {
                 if let [username, password] = &decoded.splitn(2, ':').collect::<Vec<_>>()[..] {
                     let user = tryo_result!(AuthenticatedUser::by_name(username, &mut connection).await);
                     let authenticated = tryo_result!(user.verify_password(password));
+                    if authenticated.password_reset_required() {
+    let path = request.uri().path().as_str();
+
+    let allowed = (path == "/login/" && request.method() == Method::Post)
+    || (path == "/api/v1/auth/" && request.method() == Method::Post)
+    || (path == "/api/v1/auth/me/" && request.method() == Method::Patch);
+
+    if !allowed {
+        return CoreError::Forbidden.into_outcome();
+    }
+}
 
                     tryo_result!(audit_connection(&mut connection, authenticated.user().id).await);
 
@@ -173,6 +195,17 @@ impl<'r> FromRequest<'r> for Auth<PasswordOrBrowser> {
             let user = tryo_result!(AuthenticatedUser::by_id(tryo_result!(access_claims.id()), &mut connection).await);
             let authenticated_for_get = tryo_result!(user.validate_cookie_claims(access_claims));
             let authenticated = tryo_result!(authenticated_for_get.validate_csrf_token(csrf_token));
+            if authenticated.password_reset_required() {
+    let path = request.uri().path().as_str();
+
+    let allowed = (path == "/login/" && request.method() == Method::Post)
+    || (path == "/api/v1/auth/" && request.method() == Method::Post)
+    || (path == "/api/v1/auth/me/" && request.method() == Method::Patch);
+
+    if !allowed {
+        return CoreError::Forbidden.into_outcome();
+    }
+}
 
             tryo_result!(audit_connection(&mut connection, authenticated.user().id).await);
 

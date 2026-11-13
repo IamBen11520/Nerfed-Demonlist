@@ -1,3 +1,4 @@
+use rocket::serde::json::serde_json;
 use crate::{auth::Auth, ratelimits::UserRatelimits};
 use pointercrate_core::error::CoreError;
 use pointercrate_core::permission::PermissionsManager;
@@ -50,6 +51,7 @@ fn build_cookies(user: &AuthenticatedUser<PasswordOrBrowser>, cookies: &CookieJa
     Ok(())
 }
 
+
 #[localized]
 #[rocket::get("/login/")]
 pub async fn login_page(auth: Option<Auth<NonMutating>>) -> Result<Redirect, Page> {
@@ -57,19 +59,44 @@ pub async fn login_page(auth: Option<Auth<NonMutating>>) -> Result<Redirect, Pag
         .ok_or_else(|| Page::new(pointercrate_user_pages::login::login_page()))
 }
 
+#[localized]
+#[rocket::get("/reset-password/")]
+pub async fn reset_password_page(
+    auth: Option<Auth<NonMutating>>,
+) -> Result<Page, Redirect> {
+    match auth {
+        Some(auth) if auth.user.password_reset_required() => {
+            Ok(Page::new(
+                pointercrate_user_pages::reset_password::reset_password_page(),
+            ))
+        }
+        Some(_) => Err(Redirect::to("/account/")),
+        None => Err(Redirect::to("/login/")),
+    }
+}
+
+
 // Doing the post with cookies already set will just refresh them. No point in doing that, but also not harmful.
 #[localized]
 #[rocket::post("/login/")]
 pub async fn login(
     auth: Result<Auth<PasswordOrBrowser>, CoreError>, ip: IpAddr, ratelimits: &State<UserRatelimits>, cookies: &CookieJar<'_>,
-) -> pointercrate_core_api::error::Result<Status> {
+) -> pointercrate_core_api::error::Result<rocket::serde::json::Json<serde_json::Value>> {
     ratelimits.login_attempts(ip)?;
 
     let auth = auth?;
 
-    build_cookies(&auth.user, cookies)?;
+    let redirect = if auth.user.password_reset_required() {
+    "/reset-password/"
+} else {
+    "/account/"
+};
 
-    Ok(Status::NoContent)
+build_cookies(&auth.user, cookies)?;
+
+Ok(rocket::serde::json::Json(serde_json::json!({
+    "redirect": redirect
+})))
 }
 
 #[localized]
@@ -109,9 +136,17 @@ pub async fn account_page(
     auth: Option<Auth<NonMutating>>, permissions: &State<PermissionsManager>, tabs: &State<AccountPageConfig>,
 ) -> Result<Page, Redirect> {
     match auth {
-        Some(mut auth) => Ok(Page::new(tabs.account_page(auth.user, permissions, &mut auth.connection).await)),
-        None => Err(Redirect::to(rocket::uri!(login_page))),
+    Some(mut auth) => {
+        if auth.user.password_reset_required() {
+            return Err(Redirect::to("/reset-password/"));
+        }
+
+        Ok(Page::new(
+            tabs.account_page(auth.user, permissions, &mut auth.connection).await,
+        ))
     }
+    None => Err(Redirect::to(rocket::uri!(login_page))),
+}
 }
 
 #[rocket::get("/logout/")]
@@ -136,6 +171,9 @@ pub async fn google_oauth_login(
     let authenticated_user = match auth {
         None => maybe_linked_user?,
         Some(mut signed_in_user) => {
+        if signed_in_user.user.password_reset_required() {
+    return Err(CoreError::Forbidden.into());
+}
             // Unauthorized = No linked account found. But in the flow that is supposed to establish the link,
             // that is exactly what we need.
             if !matches!(maybe_linked_user, Err(UserError::Core(CoreError::Unauthorized))) {
@@ -150,7 +188,9 @@ pub async fn google_oauth_login(
             signed_in_user.user
         },
     };
-
+if authenticated_user.password_reset_required() {
+    return Err(CoreError::Forbidden.into());
+}
     build_cookies(&authenticated_user, cookies)?;
 
     Ok(Status::NoContent)

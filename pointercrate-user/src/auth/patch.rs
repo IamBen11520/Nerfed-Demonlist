@@ -44,7 +44,15 @@ impl Debug for PatchMe {
 
 impl AuthenticatedUser<PasswordOrBrowser> {
     pub async fn apply_patch(mut self, patch: PatchMe, connection: &mut PgConnection) -> Result<User> {
-        if let Some(password) = patch.password {
+    if self.password_reset_required
+        && (patch.password.is_none()
+            || patch.display_name.is_some()
+            || patch.youtube_channel.is_some())
+    {
+        return Err(CoreError::Forbidden.into());
+    }
+
+    if let Some(password) = patch.password {
             if !self.auth_artifact.is_password() {
                 return Err(CoreError::Unauthorized.into());
             }

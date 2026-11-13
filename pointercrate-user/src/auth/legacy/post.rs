@@ -40,8 +40,9 @@ mod register {
                     log::info!("Newly registered user with name {} has been assigned ID {}", registration.name, id);
 
                     Ok(AuthenticatedUser {
-                        gen: 0,
-                        auth_type: AuthenticationType::legacy(
+    gen: 0,
+    password_reset_required: false,
+    auth_type: AuthenticationType::legacy(
                             User {
                                 id,
                                 name: registration.name,

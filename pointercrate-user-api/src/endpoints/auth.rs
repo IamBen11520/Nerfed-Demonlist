@@ -51,26 +51,38 @@ pub async fn register(
         .status(Status::Created))
 }
 
+
 #[localized]
 #[rocket::post("/")]
 pub async fn login(
-    auth: std::result::Result<Auth<PasswordOrBrowser>, CoreError>, ip: IpAddr, ratelimits: &State<UserRatelimits>,
+    auth: std::result::Result<Auth<PasswordOrBrowser>, CoreError>,
+    ip: IpAddr,
+    ratelimits: &State<UserRatelimits>,
 ) -> Result<Response2<Json<serde_json::Value>>> {
     ratelimits.login_attempts(ip)?;
     let auth = auth?;
 
-    Ok(Response2::json(serde_json::json! {
-        {
+    if auth.user.password_reset_required() {
+        return Ok(Response2::json(serde_json::json!({
             "data": auth.user.user(),
-            "token": auth.user.generate_programmatic_access_token()
-        }
-    })
+            "password_reset_required": true
+        }))
+        .with_header("etag", auth.user.user().etag_string()));
+    }
+
+    Ok(Response2::json(serde_json::json!({
+        "data": auth.user.user(),
+        "token": auth.user.generate_programmatic_access_token()
+    }))
     .with_header("etag", auth.user.user().etag_string()))
 }
 
 #[localized]
 #[rocket::post("/invalidate/")]
 pub async fn invalidate(mut auth: Auth<PasswordOrBrowser>) -> Result<Status> {
+if auth.user.password_reset_required() {
+    return Err(CoreError::Forbidden.into());
+}
     auth.user.invalidate_all_tokens(&mut auth.connection).await?;
     auth.connection.commit().await.map_err(UserError::from)?;
 
@@ -106,6 +118,9 @@ pub async fn patch_me(
 #[localized]
 #[rocket::delete("/me/")]
 pub async fn delete_me(mut auth: Auth<PasswordOrBrowser>, pred: Precondition) -> Result<Status> {
+if auth.user.password_reset_required() {
+    return Err(CoreError::Forbidden.into());
+}
     pred.require_etag_match(auth.user.user())?;
 
     auth.user.delete(&mut auth.connection).await?;

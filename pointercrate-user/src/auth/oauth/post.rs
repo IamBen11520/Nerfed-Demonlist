@@ -124,8 +124,9 @@ impl AuthenticatedUser<PasswordOrBrowser> {
         .member_id;
 
         Ok(AuthenticatedUser {
-            gen: 0,
-            auth_type: AuthenticationType::oauth(User {
+    gen: 0,
+    password_reset_required: false,
+    auth_type: AuthenticationType::oauth(User {
                 id,
                 name: username,
                 permissions: 0,

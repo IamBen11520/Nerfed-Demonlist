@@ -2,6 +2,7 @@
 
 import {
   del,
+  post,
   displayError,
   patch,
   valueMissing,
@@ -40,11 +41,75 @@ function setupPatchUserPermissionsForm() {
             tr("user", "user", "user-viewer.edit-notmodified")
           );
         }
-      })
-      .catch(displayError(editForm));
+        })
+        .catch(displayError(editForm));
+    });
+
+  const resetPasswordButton = document.getElementById("reset-user-password");
+
+  if (resetPasswordButton) {
+    resetPasswordButton.addEventListener("click", async () => {
+      if (!selectedUser || selectedUser.name === window.username) {
+        return;
+      }
+
+      if (!confirm(`Reset the password for ${selectedUser.name}?`)) {
+        return;
+      }
+
+      resetPasswordButton.disabled = true;
+
+      try {
+        const response = await post(
+          "/api/v1/users/" + selectedUser.id + "/reset-password",
+          {}
+        );
+
+        const password = response.data;
+
+        // Keep the temporary password visible until the admin dismisses it.
+        const passwordWindow = window.open("", "_blank", "width=500,height=300");
+
+if (passwordWindow) {
+  const heading = passwordWindow.document.createElement("h2");
+  heading.textContent = "Temporary Password";
+
+  const description = passwordWindow.document.createElement("p");
+  description.textContent =
+    `Account: ${selectedUser.name}. Copy this password now. It cannot be retrieved later.`;
+
+  const passwordField = passwordWindow.document.createElement("input");
+  passwordField.type = "text";
+  passwordField.readOnly = true;
+  passwordField.value = password;
+  passwordField.style.width = "95%";
+
+  const copyButton = passwordWindow.document.createElement("button");
+  copyButton.textContent = "Copy Password";
+  copyButton.addEventListener("click", async () => {
+    passwordField.select();
+    passwordWindow.document.execCommand("copy");
+    copyButton.textContent = "Copied!";
   });
 
-  let deleteUserButton = document.getElementById("delete-user");
+  passwordWindow.document.body.append(
+    heading,
+    description,
+    passwordField,
+    copyButton
+  );
+} else {
+  prompt("Copy the temporary password now:", password);
+}
+      } catch (error) {
+        displayError(editForm)(error);
+      } finally {
+        resetPasswordButton.disabled = false;
+      }
+      });
+    }
+
+    let deleteUserButton = document.getElementById("delete-user");
 
   if (deleteUserButton) {
     // The button isn't generated server sided for people who don't have permissions to delete users (aka aren't pointercrate admins)

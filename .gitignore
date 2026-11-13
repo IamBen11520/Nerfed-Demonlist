@@ -10,3 +10,4 @@ eslint.config.mjs
 package-lock.json
 package.json
 target/
+pointercrate-core-pages/static/css/main.css.backup
