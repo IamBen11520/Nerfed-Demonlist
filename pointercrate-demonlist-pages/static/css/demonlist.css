@@ -494,3 +494,37 @@ div.button.white.js-toggle:focus-visible {
   outline: none !important;
   border: none !important;
 }
+/* Modern Position History styling */
+
+#history-table {
+  border: none;
+  outline: none;
+  background: #151927;
+  border-collapse: collapse;
+}
+
+#history-table tr,
+#history-table tr:nth-child(even) {
+  background: #171c2b;
+  color: #e8eaf2;
+}
+
+#history-table tr.moved-up {
+  background: #14251f;
+  color: #75e0ae;
+}
+
+#history-table tr.moved-down {
+  background: #301c29;
+  color: #ff9eae;
+}
+
+#history-table td,
+#history-table th {
+  color: inherit;
+  border-bottom: 1px solid #292f43;
+}
+/* Remove border from the Position History panel */
+.panel:has(#history-table) {
+  border: none;
+}
