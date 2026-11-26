@@ -17,7 +17,7 @@ pointercrate-core-pages = {path = "../pointercrate-core-pages"}
 pointercrate-core-macros = {path = "../pointercrate-core-macros"}
 serde_urlencoded = "0.7.0"
 log = "0.4.29"
-base64 = "0.22.1"
+base64 = "0.23.1"
 nonzero_ext = "0.3.0"
 governor = "0.10.4"
 
