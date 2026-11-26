@@ -84,6 +84,9 @@ pub async fn login(
 ) -> pointercrate_core_api::error::Result<rocket::serde::json::Json<serde_json::Value>> {
     ratelimits.login_attempts(ip)?;
 
+let browser = crate::ratelimits::browser_id(cookies)?;
+ratelimits.browser_login_attempts(browser)?;
+
     let auth = auth?;
 
     let redirect = if auth.user.password_reset_required() {
@@ -116,10 +119,14 @@ pub async fn register(
 
     ratelimits.soft_registrations(ip)?;
 
+let browser = crate::ratelimits::browser_id(cookies)?;
+ratelimits.browser_soft_registrations(browser.clone())?;
+
     LegacyAuthenticatedUser::validate_password(&registration.password)?;
     User::validate_name(&registration.name)?;
 
     ratelimits.registrations(ip)?;
+ratelimits.browser_registrations(browser)?;
 
     let user = AuthenticatedUser::register(registration.0, &mut connection).await?;
 

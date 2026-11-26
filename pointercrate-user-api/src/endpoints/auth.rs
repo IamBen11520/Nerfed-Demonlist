@@ -29,7 +29,7 @@ use {
 #[localized]
 #[rocket::post("/register/", data = "<body>")]
 pub async fn register(
-    ip: IpAddr, body: Json<Registration>, ratelimits: &State<UserRatelimits>, pool: &State<PointercratePool>,
+    ip: IpAddr, body: Json<Registration>, ratelimits: &State<UserRatelimits>, pool: &State<PointercratePool>, cookies: &rocket::http::CookieJar<'_>,
 ) -> Result<Response2<Tagged<User>>> {
     use pointercrate_user::auth::AuthenticatedUser;
 
@@ -37,12 +37,16 @@ pub async fn register(
 
     ratelimits.soft_registrations(ip)?;
 
+let browser = crate::ratelimits::browser_id(cookies)?;
+ratelimits.browser_soft_registrations(browser.clone())?;
+
     LegacyAuthenticatedUser::validate_password(&body.password)?;
     User::validate_name(&body.name)?;
 
     let user = AuthenticatedUser::register(body.0, &mut connection).await?;
 
     ratelimits.registrations(ip)?;
+ratelimits.browser_registrations(browser)?;
 
     connection.commit().await.map_err(UserError::from)?;
 
@@ -56,10 +60,13 @@ pub async fn register(
 #[rocket::post("/")]
 pub async fn login(
     auth: std::result::Result<Auth<PasswordOrBrowser>, CoreError>,
-    ip: IpAddr,
+    ip: IpAddr, cookies: &rocket::http::CookieJar<'_>,
     ratelimits: &State<UserRatelimits>,
 ) -> Result<Response2<Json<serde_json::Value>>> {
     ratelimits.login_attempts(ip)?;
+
+let browser = crate::ratelimits::browser_id(cookies)?;
+ratelimits.browser_login_attempts(browser)?;
     let auth = auth?;
 
     if auth.user.password_reset_required() {
